@@ -1,14 +1,13 @@
 {
   "name": "node-recaptcha-v3",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "A Node.js library for verifying Google reCAPTCHA v3 tokens in your applications.",
   "main": "lib/index.js",
   "module": "lib/index.js",
   "types": "lib/types/index.d.ts",
-  "exports": {
-    "import": "./lib/index.js",
-    "require": "./lib/index.js"
-  },
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "prepublish": "npm run build",
     "test": "jest",
@@ -29,7 +28,10 @@
     "axios": "^1.7.7"
   },
   "devDependencies": {
+    "@tsconfig/recommended": "^1.0.8",
+    "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
+    "@types/supertest": "^6.0.2",
     "express": "^4.21.1",
     "jest": "^29.7.0",
     "supertest": "^7.0.0",

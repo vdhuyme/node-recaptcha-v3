@@ -1,0 +1,11 @@
+.vscode
+node_modules
+src
+.gitignore
+.prettierrc
+coverage/
+jest.config.ts
+tsconfig.json
+*.md
+!README*.md
+test/

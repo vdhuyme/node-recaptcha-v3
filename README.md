@@ -24,7 +24,7 @@ To use the library, you need to create an instance of the Recaptcha class with y
 
 ### Example
 
-```bash
+```JS
     import express from 'express';
     import Recaptcha from 'node-recaptcha-v3';
 
@@ -42,6 +42,38 @@ To use the library, you need to create an instance of the Recaptcha class with y
     });
 ```
 
+
+### Creating and Sending Token
+
+- Install reCAPTCHA: Register your site at Google reCAPTCHA to obtain your site key.
+- Generate Token: Use the site key in your JavaScript to create a token when the user submits a form:
+
+```JS
+ <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
+    <script>
+        grecaptcha.ready(function () {
+            grecaptcha.execute('YOUR_SITE_KEY', { action: 'submit' }).then(function (token) {
+                // Send the token to the server via body or header
+                fetch('/verify', {
+                    method: 'POST',
+                    headers: {
+                        'recaptcha-v3-token': token // or send in the body
+                    },
+                    body: JSON.stringify({ recaptchaV3Token: token })
+                });
+            });
+        });
+    </script>
+```
+
+
+## Middleware of the Server
+
+The middleware accepts the token via body or header:
+
+* Body: **recaptchaV3Token** 
+* Header: **recaptcha-v3-token** 
+
 ## API Reference
 
 ### reCAPTCHA
@@ -53,6 +85,7 @@ To use the library, you need to create an instance of the Recaptcha class with y
     + threshold (Number): The score threshold (0.0 - 1.0). Requests with scores below this threshold will be rejected.
 
 ## Examples
+
 Here are some common scenarios you can implement with the library:
 
 - Verify reCAPTCHA Score:
@@ -61,6 +94,7 @@ Ensure that the request meets the score threshold for further processing.
 You can set a custom threshold for different routes based on your requirements.
 
 ## License
+
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 

@@ -1,4 +1,4 @@
-import { BAD_REQUEST } from './http-status'
-import { RECAPTCHA_API, SETTING_SCORE } from './config'
+import { FORBIDDEN } from './http-status'
+import { RECAPTCHA_API, THRESHOLD } from './config'
 
-export { BAD_REQUEST, RECAPTCHA_API, SETTING_SCORE }
+export { FORBIDDEN, RECAPTCHA_API, THRESHOLD }

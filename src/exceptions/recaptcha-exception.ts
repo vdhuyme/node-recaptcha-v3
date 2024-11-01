@@ -1,9 +1,9 @@
-import { BAD_REQUEST } from '../constants'
+import { FORBIDDEN } from '../constants'
 
-export class RecaptchaException extends Error {
+export class RecaptchaV3Exception extends Error {
   public readonly statusCode: number
 
-  constructor(message: string, statusCode: number = BAD_REQUEST) {
+  constructor(message: string, statusCode: number = FORBIDDEN) {
     super(message)
     this.name = 'Recaptcha exception'
     this.statusCode = statusCode

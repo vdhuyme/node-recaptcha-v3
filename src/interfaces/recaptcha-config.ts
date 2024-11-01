@@ -1,5 +1,7 @@
 export interface RecaptchaConfig {
   secretKey: string
-  settingScore?: number
+  statusCode?: number
+  message?: string
+  threshold?: number
   apiEndPoint?: string
 }

@@ -1,3 +1,3 @@
-const BAD_REQUEST: number = 400
+const FORBIDDEN: number = 403
 
-export { BAD_REQUEST }
+export { FORBIDDEN }

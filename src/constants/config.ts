@@ -1,11 +1,11 @@
 /**
  * Default score threshold for reCAPTCHA verification.
  */
-const THRESHOLD: number = 0.5
+const THRESHOLD: number = 0.6
 
 /**
  * Google reCAPTCHA verification API endpoint.
  */
-const RECAPTCHA_API: string = 'https://www.google.com/recaptcha/api/siteverify'
+const reCAPTCHA_API: string = 'https://www.google.com/recaptcha/api/siteverify'
 
-export { THRESHOLD, RECAPTCHA_API }
+export { THRESHOLD, reCAPTCHA_API }

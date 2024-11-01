@@ -1,1 +1,1 @@
-export * from './recaptcha-exception'
+export * from './re-captcha-exception'

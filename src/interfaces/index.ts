@@ -1,3 +1,3 @@
-export * from './recaptcha-v3-configuration'
-export * from './google-recaptcha-v3-response'
-export * from './recaptcha-v3-result'
+export * from './re-captcha-v3-result'
+export * from './re-captcha-v3-configuration'
+export * from './google-re-captcha-v3-response'

@@ -1,6 +1,6 @@
 {
   "name": "node-recaptcha-v3",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "A Node.js library for verifying Google reCAPTCHA v3 tokens in your applications.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

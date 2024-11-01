@@ -22,7 +22,7 @@ npm install node-recaptcha-v3
 
 ## Usage
 
-To use the library, you need to create an instance of the ReCaptchaV3 class with your secret key. After that, you can use the v3 middleware in your Express.js routes.
+To use the library, you need to create an instance of the ReCaptchaV3 class with your secret key. After that, you can use the verify middleware in your Express.js routes.
 
 ### Example
 

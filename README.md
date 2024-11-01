@@ -2,6 +2,8 @@
 
 An open-source Node.js library to support verifying Google reCAPTCHA V3.
 
+> [You can see an example here](https://github.com/voduchuy2001/node-recaptcha-v3-example)
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -15,31 +17,31 @@ An open-source Node.js library to support verifying Google reCAPTCHA V3.
 You can install the package using npm:
 
 ```bash
-    npm install node-recaptcha-v3
+npm install node-recaptcha-v3
 ```
 
 ## Usage
 
-To use the library, you need to create an instance of the Recaptcha class with your secret key. After that, you can use the v3 middleware in your Express.js routes.
+To use the library, you need to create an instance of the ReCaptchaV3 class with your secret key. After that, you can use the v3 middleware in your Express.js routes.
 
 ### Example
 
 ```JS
-    import express from 'express';
-    import Recaptcha from 'node-recaptcha-v3';
+import express from 'express';
+import ReCaptchaV3 from 'node-recaptcha-v3';
 
-    const app = express();
-    const recaptcha = new Recaptcha({ secretKey: 'YOUR_SECRET_KEY' });
+const app = express();
+const reCaptchaV3 = new ReCaptchaV3({ secretKey: 'YOUR_SECRET_KEY' });
 
-    app.use(express.json());
+app.use(express.json());
 
-    app.post('/verify', recaptcha.v3(0.5), (req, res) => {
-        res.send({ score: req.recaptchaV3Score });
-    });
+app.post('/verify', reCaptchaV3.verify(0.5), (req, res) => {
+    res.send({ score: req.reCaptchaV3Score });
+});
 
-    app.listen(3000, () => {
-        console.log('Server is running on port 3000');
-    });
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
 ```
 
 ### Creating and Sending Token
@@ -48,38 +50,38 @@ To use the library, you need to create an instance of the Recaptcha class with y
 - Generate Token: Use the site key in your JavaScript to create a token when the user submits a form:
 
 ```JS
-    <script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
-    <script>
-        grecaptcha.ready(function () {
-            grecaptcha.execute('YOUR_SITE_KEY', { action: 'submit' }).then(function (token) {
-                // Send the token to the server via body or header
-                fetch('/verify', {
-                    method: 'POST',
-                    headers: {
-                        'recaptcha-v3-token': token // or send in the body
-                    },
-                    body: JSON.stringify({ recaptchaV3Token: token })
-                });
+<script src="https://www.google.com/recaptcha/api.js?render=YOUR_SITE_KEY"></script>
+<script>
+    grecaptcha.ready(function () {
+        grecaptcha.execute('YOUR_SITE_KEY', { action: 'submit' }).then(function (token) {
+            // Send the token to the server via body or header
+            fetch('/verify', {
+                method: 'POST',
+                headers: {
+                    'recaptcha-v3-token': token // or send in the body
+                },
+                body: JSON.stringify({ reCaptchaV3Token: token })
             });
         });
-    </script>
+    });
+</script>
 ```
 
 ## Middleware of the Server
 
 The middleware accepts the token via body or header:
 
-- Body: **recaptchaV3Token**
-- Header: **recaptcha-v3-token**
+- Body: **reCaptchaV3Token**
+- Header: **re-captcha-v3-token**
 
 ## API Reference
 
 ### reCAPTCHA
 
-- Constructor: new Recaptcha(options)
+- Constructor: new ReCaptchaV3(options)
   - options (Object): An object containing the configuration options.
     - secretKey (String): Your reCAPTCHA secret key.
-- Method: v3(threshold)
+- Method: verify(threshold)
 
   - threshold (Number): The score threshold (0.0 - 1.0). Requests with scores below this threshold will be rejected.
 

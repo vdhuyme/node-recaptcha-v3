@@ -1,4 +1,4 @@
 import { FORBIDDEN } from './http-status'
-import { RECAPTCHA_API, THRESHOLD } from './config'
+import { reCAPTCHA_API, THRESHOLD } from './config'
 
-export { FORBIDDEN, RECAPTCHA_API, THRESHOLD }
+export { FORBIDDEN, reCAPTCHA_API, THRESHOLD }

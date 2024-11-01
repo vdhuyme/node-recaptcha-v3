@@ -1,4 +1,4 @@
-export interface RecaptchaV3Result {
+export interface ReCaptchaV3Result {
   success: boolean
   score: number
 }

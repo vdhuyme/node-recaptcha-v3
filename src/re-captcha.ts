@@ -1,9 +1,9 @@
-import { FORBIDDEN, RECAPTCHA_API, THRESHOLD } from './constants'
+import { FORBIDDEN, reCAPTCHA_API, THRESHOLD } from './constants'
 import axios, { AxiosResponse } from 'axios'
-import { RecaptchaV3Exception } from './exceptions'
-import { RecaptchaConfiguration, GoogleRecaptchaV3Response, RecaptchaV3Result } from './interfaces'
+import { GoogleReCaptchaV3Response, ReCaptchaV3Configuration, ReCaptchaV3Result } from './interfaces'
+import { ReCaptchaV3Exception } from './exceptions'
 
-class Recaptcha {
+class ReCaptchaV3 {
   private secretKey: string
   private defaultScoreThreshold: number
   private apiEndPoint: string
@@ -15,8 +15,8 @@ class Recaptcha {
     threshold = THRESHOLD,
     statusCode = FORBIDDEN,
     message = 'reCAPTCHA verification failed',
-    apiEndPoint = RECAPTCHA_API
-  }: RecaptchaConfiguration) {
+    apiEndPoint = reCAPTCHA_API
+  }: ReCaptchaV3Configuration) {
     this.secretKey = this.validateSecretKey(secretKey)
     this.defaultScoreThreshold = this.validateScoreThreshold(threshold)
     this.defaultStatusCode = statusCode
@@ -38,9 +38,9 @@ class Recaptcha {
     return score
   }
 
-  private async extractToken(token: string): Promise<RecaptchaV3Result> {
+  private async extractToken(token: string): Promise<ReCaptchaV3Result> {
     try {
-      const { data }: AxiosResponse<GoogleRecaptchaV3Response> = await axios.post(this.apiEndPoint, null, {
+      const { data }: AxiosResponse<GoogleReCaptchaV3Response> = await axios.post(this.apiEndPoint, null, {
         params: {
           secret: this.secretKey,
           response: token
@@ -53,19 +53,19 @@ class Recaptcha {
       }
     } catch (error) {
       if (error instanceof Error) {
-        throw new RecaptchaV3Exception(error.message, this.defaultStatusCode)
+        throw new ReCaptchaV3Exception(this.defaultErrorMessage, this.defaultStatusCode)
       }
-      throw new RecaptchaV3Exception('Failed to validate reCAPTCHA', this.defaultStatusCode)
+      throw new ReCaptchaV3Exception('Failed to validate reCAPTCHA', this.defaultStatusCode)
     }
   }
 
-  public v3(customThreshold?: number, customStatusCode?: number, customMessage?: string) {
+  public verify(customThreshold?: number, customStatusCode?: number, customMessage?: string) {
     const scoreThreshold = customThreshold ? this.validateScoreThreshold(customThreshold) : this.defaultScoreThreshold
     const statusCode = customStatusCode ?? this.defaultStatusCode
     const errorMessage = customMessage ?? this.defaultErrorMessage
 
     return async (req: any, res: any, next: any) => {
-      const token = req.body?.recaptchaV3Token || req.headers?.['recaptcha-v3-token']
+      const token = req.body?.reCaptchaV3Token || req.headers?.['re-captcha-v3-token']
       if (!token) {
         return res.status(statusCode).json({
           error: errorMessage
@@ -79,7 +79,7 @@ class Recaptcha {
             error: errorMessage
           })
         }
-        req.recaptchaV3Score = score
+        req.reCaptchaV3Score = score
         next()
       } catch (error) {
         if (error instanceof Error) {
@@ -95,4 +95,4 @@ class Recaptcha {
   }
 }
 
-export default Recaptcha
+export default ReCaptchaV3

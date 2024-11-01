@@ -1,3 +1,3 @@
-import Recaptcha from './recaptcha'
+import ReCaptchaV3 from './re-captcha'
 
-export default Recaptcha
+export default ReCaptchaV3

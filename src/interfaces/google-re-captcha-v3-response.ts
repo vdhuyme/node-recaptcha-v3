@@ -1,4 +1,4 @@
-export interface GoogleRecaptchaV3Response {
+export interface GoogleReCaptchaV3Response {
   success: boolean
   score: number
   action: string

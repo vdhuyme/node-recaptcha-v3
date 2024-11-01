@@ -1,7 +1,7 @@
 import { FORBIDDEN, RECAPTCHA_API, THRESHOLD } from './constants'
 import axios, { AxiosResponse } from 'axios'
 import { RecaptchaV3Exception } from './exceptions'
-import { RecaptchaConfig } from './interfaces'
+import { RecaptchaConfiguration, GoogleRecaptchaV3Response, RecaptchaV3Result } from './interfaces'
 
 class Recaptcha {
   private secretKey: string
@@ -16,7 +16,7 @@ class Recaptcha {
     statusCode = FORBIDDEN,
     message = 'reCAPTCHA verification failed',
     apiEndPoint = RECAPTCHA_API
-  }: RecaptchaConfig) {
+  }: RecaptchaConfiguration) {
     this.secretKey = this.validateSecretKey(secretKey)
     this.defaultScoreThreshold = this.validateScoreThreshold(threshold)
     this.defaultStatusCode = statusCode
@@ -38,22 +38,25 @@ class Recaptcha {
     return score
   }
 
-  private async extractToken(token: string, statusCode: number, message: string): Promise<number> {
-    const response: AxiosResponse<any> = await axios.post(this.apiEndPoint, null, {
-      params: {
-        secret: this.secretKey,
-        response: token
+  private async extractToken(token: string): Promise<RecaptchaV3Result> {
+    try {
+      const { data }: AxiosResponse<GoogleRecaptchaV3Response> = await axios.post(this.apiEndPoint, null, {
+        params: {
+          secret: this.secretKey,
+          response: token
+        }
+      })
+      const { success, score } = data
+      return {
+        success,
+        score
       }
-    })
-    const { success, score } = response.data
-    if (!success) {
-      throw new RecaptchaV3Exception(message, statusCode)
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new RecaptchaV3Exception(error.message, this.defaultStatusCode)
+      }
+      throw new RecaptchaV3Exception('Failed to validate reCAPTCHA', this.defaultStatusCode)
     }
-    return score
-  }
-
-  private handleErrorResponse(res: any, statusCode: number, errorMessage: string): any {
-    return res.status(statusCode).json({ error: errorMessage })
   }
 
   public v3(customThreshold?: number, customStatusCode?: number, customMessage?: string) {
@@ -64,19 +67,29 @@ class Recaptcha {
     return async (req: any, res: any, next: any) => {
       const token = req.body?.recaptchaV3Token || req.headers?.['recaptcha-v3-token']
       if (!token) {
-        return this.handleErrorResponse(res, statusCode, 'Invalid token: it must be a non-empty string')
+        return res.status(statusCode).json({
+          error: errorMessage
+        })
       }
 
       try {
-        const score = await this.extractToken(token, statusCode, errorMessage)
-        if (!score || score < scoreThreshold) {
-          return this.handleErrorResponse(res, statusCode, errorMessage)
+        const { success, score } = await this.extractToken(token)
+        if (!success || score < scoreThreshold) {
+          return res.status(statusCode).json({
+            error: errorMessage
+          })
         }
         req.recaptchaV3Score = score
         next()
       } catch (error) {
-        const message = error instanceof RecaptchaV3Exception ? error.message : errorMessage
-        return this.handleErrorResponse(res, statusCode, message)
+        if (error instanceof Error) {
+          return res.status(statusCode).json({
+            error: error.message || errorMessage
+          })
+        }
+        return res.status(statusCode).json({
+          error: errorMessage
+        })
       }
     }
   }

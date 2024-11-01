@@ -1,4 +1,4 @@
-export interface RecaptchaConfig {
+export interface RecaptchaConfiguration {
   secretKey: string
   statusCode?: number
   message?: string

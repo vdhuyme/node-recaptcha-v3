@@ -53,7 +53,7 @@ class ReCaptchaV3 {
       }
     } catch (error) {
       if (error instanceof Error) {
-        throw new ReCaptchaV3Exception(error.message, this.defaultStatusCode)
+        throw new ReCaptchaV3Exception(this.defaultErrorMessage, this.defaultStatusCode)
       }
       throw new ReCaptchaV3Exception('Failed to validate reCAPTCHA', this.defaultStatusCode)
     }

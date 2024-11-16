@@ -5,91 +5,102 @@ import { ReCaptchaV3Exception } from './exceptions'
 
 class ReCaptchaV3 {
   private secretKey: string
-  private defaultScoreThreshold: number
+  private scoreThreshold: number
   private apiEndPoint: string
-  private defaultStatusCode: number
-  private defaultErrorMessage: string
+  private statusCode: number
+  private errorMessage: string
 
-  constructor({
-    secretKey,
-    threshold = THRESHOLD,
-    statusCode = FORBIDDEN,
-    message = 'reCAPTCHA verification failed',
-    apiEndPoint = reCAPTCHA_API
-  }: ReCaptchaV3Configuration) {
-    this.secretKey = this.validateSecretKey(secretKey)
-    this.defaultScoreThreshold = this.validateScoreThreshold(threshold)
-    this.defaultStatusCode = statusCode
-    this.defaultErrorMessage = message
+  constructor(config: ReCaptchaV3Configuration) {
+    const {
+      secretKey,
+      threshold = THRESHOLD,
+      statusCode = FORBIDDEN,
+      message = 'reCAPTCHA verification failed',
+      apiEndPoint = reCAPTCHA_API
+    } = config
+
+    this.secretKey = this.validateNonEmptyString(secretKey, 'Secret key cannot be empty')
+    this.scoreThreshold = this.validateScoreRange(threshold)
+    this.statusCode = statusCode
+    this.errorMessage = message
     this.apiEndPoint = apiEndPoint
   }
 
-  private validateSecretKey(secretKey: string): string {
-    if (typeof secretKey !== 'string' || secretKey.trim() === '') {
-      throw new Error('Invalid secret key: it must be a non-empty string')
+  /**
+   * Validate that a string is non-empty.
+   */
+  private validateNonEmptyString(value: string, errorMessage: string): string {
+    if (!value || typeof value !== 'string' || value.trim() === '') {
+      throw new Error(errorMessage)
     }
-    return secretKey
+    return value.trim()
   }
 
-  private validateScoreThreshold(score: number): number {
-    if (typeof score !== 'number' || score < 0 || score > 1) {
-      throw new Error('Invalid pass score: it must be a number between 0 and 1')
+  /**
+   * Ensure the score is within 0 and 1.
+   */
+  private validateScoreRange(score: number): number {
+    if (score < 0 || score > 1) {
+      throw new Error('Score must be between 0 and 1.')
     }
     return score
   }
 
-  private async extractToken(token: string): Promise<ReCaptchaV3Result> {
+  /**
+   * Send a validation request to Google's reCAPTCHA API.
+   */
+  private async validateReCaptchaToken(token: string): Promise<ReCaptchaV3Result> {
     try {
-      const { data }: AxiosResponse<GoogleReCaptchaV3Response> = await axios.post(this.apiEndPoint, null, {
+      const response: AxiosResponse<GoogleReCaptchaV3Response> = await axios.post(this.apiEndPoint, null, {
         params: {
           secret: this.secretKey,
           response: token
         }
       })
-      const { success, score } = data
-      return {
-        success,
-        score
-      }
+
+      const { success, score } = response.data
+
+      return { success, score }
     } catch (error) {
-      if (error instanceof Error) {
-        throw new ReCaptchaV3Exception(this.defaultErrorMessage, this.defaultStatusCode)
-      }
-      throw new ReCaptchaV3Exception('Failed to validate reCAPTCHA', this.defaultStatusCode)
+      throw new ReCaptchaV3Exception('Failed to communicate with reCAPTCHA API', this.statusCode)
     }
   }
 
-  public verify(customThreshold?: number, customStatusCode?: number, customMessage?: string) {
-    const scoreThreshold = customThreshold ? this.validateScoreThreshold(customThreshold) : this.defaultScoreThreshold
-    const statusCode = customStatusCode ?? this.defaultStatusCode
-    const errorMessage = customMessage ?? this.defaultErrorMessage
+  /**
+   * Helper to handle error responses.
+   */
+  private respondWithError(res: any, message: string, statusCode: number): void {
+    res.status(statusCode).json({ error: message })
+  }
 
-    return async (req: any, res: any, next: any) => {
+  /**
+   * Middleware to validate reCAPTCHA tokens.
+   */
+  public verify(
+    customThreshold?: number,
+    customStatusCode?: number,
+    customMessage?: string
+  ): (req: any, res: any, next: any) => Promise<void> {
+    const threshold = this.validateScoreRange(customThreshold ?? this.scoreThreshold)
+    const statusCode = customStatusCode ?? this.statusCode
+    const errorMessage = customMessage ?? this.errorMessage
+
+    return async (req: any, res: any, next: any): Promise<void> => {
       const token = req.body?.reCaptchaV3Token || req.headers?.['re-captcha-v3-token']
       if (!token) {
-        return res.status(statusCode).json({
-          error: errorMessage
-        })
+        return this.respondWithError(res, errorMessage, statusCode)
       }
 
       try {
-        const { success, score } = await this.extractToken(token)
-        if (!success || score < scoreThreshold) {
-          return res.status(statusCode).json({
-            error: errorMessage
-          })
+        const { success, score } = await this.validateReCaptchaToken(token)
+        if (!success || score < threshold) {
+          return this.respondWithError(res, errorMessage, statusCode)
         }
         req.reCaptchaV3Score = score
         next()
       } catch (error) {
-        if (error instanceof Error) {
-          return res.status(statusCode).json({
-            error: error.message || errorMessage
-          })
-        }
-        return res.status(statusCode).json({
-          error: errorMessage
-        })
+        const errorResponseMessage = error instanceof ReCaptchaV3Exception ? error.message : 'Unexpected error occurred'
+        this.respondWithError(res, errorResponseMessage, statusCode)
       }
     }
   }

@@ -1,7 +1,7 @@
 /**
  * Default score threshold for reCAPTCHA verification.
  */
-const THRESHOLD: number = 0.6
+const THRESHOLD: number = 0.5
 
 /**
  * Google reCAPTCHA verification API endpoint.
